@@ -3,9 +3,10 @@ import sys
 import json
 from datetime import datetime
 import time
-
+import uuid 
 class MiniCourseAPITester:
-    def __init__(self, base_url="https://ailessons.preview.emergentagent.com/api"):
+    # UPDATED: The base_url now points to your local server
+    def __init__(self, base_url="http://127.0.0.1:8000/api"):
         self.base_url = base_url
         self.token = None
         self.user_id = None
@@ -29,6 +30,7 @@ class MiniCourseAPITester:
         print(f"   URL: {url}")
         
         try:
+            response = None
             if method == 'GET':
                 response = requests.get(url, headers=test_headers, timeout=30)
             elif method == 'POST':
@@ -38,6 +40,10 @@ class MiniCourseAPITester:
             elif method == 'DELETE':
                 response = requests.delete(url, headers=test_headers, timeout=30)
 
+            if response is None:
+                print(f"❌ Failed - Invalid method: {method}")
+                return False, {}
+
             success = response.status_code == expected_status
             if success:
                 self.tests_passed += 1
@@ -46,23 +52,29 @@ class MiniCourseAPITester:
                     response_data = response.json()
                     print(f"   Response: {json.dumps(response_data, indent=2)[:200]}...")
                     return True, response_data
-                except:
+                except json.JSONDecodeError:
                     return True, {}
             else:
                 print(f"❌ Failed - Expected {expected_status}, got {response.status_code}")
                 try:
                     error_data = response.json()
                     print(f"   Error: {error_data}")
-                except:
+                except json.JSONDecodeError:
                     print(f"   Error: {response.text}")
                 return False, {}
 
+        except requests.exceptions.RequestException as e:
+            print(f"❌ Failed - Connection Error: {str(e)}")
+            return False, {}
         except Exception as e:
-            print(f"❌ Failed - Error: {str(e)}")
+            print(f"❌ Failed - Unexpected Error: {str(e)}")
             return False, {}
 
     def test_root_endpoint(self):
         """Test the root API endpoint"""
+        # The root endpoint in server.py is under /api, but the test script appends it.
+        # The actual root of the server is not under /api.
+        # So we test the API root.
         return self.run_test(
             "Root API Endpoint",
             "GET",
@@ -196,13 +208,11 @@ class MiniCourseAPITester:
 
     def test_unauthorized_access(self):
         """Test accessing protected endpoints without authentication"""
-        # Temporarily remove token
         original_token = self.token
         self.token = None
         
         print("\n🔒 Testing unauthorized access...")
         
-        # Test protected endpoints - expecting 401 or 500 (server error due to no auth)
         endpoints = [
             ("/courses/generate", "POST", {"topic": "test"}),
             ("/courses", "GET", None),
@@ -210,45 +220,35 @@ class MiniCourseAPITester:
         
         unauthorized_tests_passed = 0
         for endpoint, method, data in endpoints:
-            success, response = self.run_test(
-                f"Unauthorized {method} {endpoint}",
-                method,
-                endpoint,
-                401,  # Expecting 401 Unauthorized
-                data=data
-            )
-            # Accept both 401 and 500 as valid "unauthorized" responses
-            if not success:
-                # Check if it's a 500 error (which indicates auth failure in this implementation)
-                try:
-                    url = f"{self.base_url}{endpoint}"
-                    test_headers = {'Content-Type': 'application/json'}
-                    if method == 'GET':
-                        resp = requests.get(url, headers=test_headers, timeout=30)
-                    else:
-                        resp = requests.post(url, json=data, headers=test_headers, timeout=30)
-                    
-                    if resp.status_code in [401, 500]:  # Both indicate auth issues
-                        print(f"✅ Correctly blocked unauthorized access (status: {resp.status_code})")
-                        unauthorized_tests_passed += 1
-                    else:
-                        print(f"❌ Unexpected status for unauthorized access: {resp.status_code}")
-                except:
-                    pass
-            else:
-                unauthorized_tests_passed += 1
-        
-        # Restore token
+            url = f"{self.base_url}{endpoint}"
+            test_headers = {'Content-Type': 'application/json'}
+            
+            try:
+                response = None
+                if method == 'GET':
+                    response = requests.get(url, headers=test_headers, timeout=30)
+                else:
+                    response = requests.post(url, json=data, headers=test_headers, timeout=30)
+                
+                if response.status_code == 401:
+                    print(f"✅ Correctly blocked unauthorized access (status: {response.status_code}) for {method} {endpoint}")
+                    unauthorized_tests_passed += 1
+                else:
+                    print(f"❌ Unexpected status for unauthorized access: {response.status_code} for {method} {endpoint}")
+            except requests.exceptions.RequestException as e:
+                print(f"   Error during unauthorized test: {e}")
+
         self.token = original_token
         
         print(f"   Unauthorized access tests: {unauthorized_tests_passed}/{len(endpoints)} passed")
-        return unauthorized_tests_passed >= len(endpoints) - 1  # Allow 1 failure
+        return unauthorized_tests_passed == len(endpoints)
+
 
 def main():
     print("🚀 Starting Mini Course Generator API Tests")
     print("=" * 50)
     
-    # Setup
+    # Setup - The tester now automatically uses the local URL
     tester = MiniCourseAPITester()
     timestamp = datetime.now().strftime('%H%M%S')
     test_username = f"testuser_{timestamp}"
@@ -260,7 +260,7 @@ def main():
         # Test 1: Root endpoint
         print("\n📍 Phase 1: Basic API Connectivity")
         if not tester.test_root_endpoint()[0]:
-            print("❌ Root endpoint failed, stopping tests")
+            print("❌ Root endpoint failed, stopping tests. Is the server running?")
             return 1
 
         # Test 2: User registration
@@ -285,9 +285,8 @@ def main():
             print("❌ Course generation failed - LLM integration issue")
             print("⚠️  Continuing with other tests using mock course data...")
             
-            # Create mock course data for testing other endpoints
             course_data = {
-                "id": "mock-course-id",
+                "id": f"mock-course-{uuid.uuid4()}",
                 "user_id": tester.user_id,
                 "topic": test_topic,
                 "title": f"Mock Course: {test_topic}",
@@ -321,6 +320,8 @@ def main():
             print("❌ Course saving failed")
             return 1
 
+        time.sleep(1) # Give a moment for the data to be saved in DB
+
         # Test 7: Get courses
         if not tester.test_get_courses()[0]:
             print("❌ Getting courses failed")
@@ -334,7 +335,6 @@ def main():
         # Test 9: Quiz functionality
         print("\n📝 Phase 5: Quiz System")
         if course_data and course_data.get('quizzes'):
-            # Create sample answers (first option for each question)
             quiz_answers = [quiz['options'][0] for quiz in course_data['quizzes']]
             
             if not tester.test_submit_quiz(tester.course_id, quiz_answers)[0]:
