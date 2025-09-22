@@ -135,7 +135,7 @@ async def generate_course_with_llm(topic: str) -> Dict[str, Any]:
     # Combine the system and user prompts into a single prompt for Gemini
     prompt = f"""
     You are an expert course creator. Generate a comprehensive mini-course about '{topic}'.
-    The course should include 3-4 detailed lessons and a total of 6-8 quiz questions.
+    The course should include 3-4 detailed lessons and a total of 15-20 quiz questions.
     Focus on practical knowledge and real-world applications.
 
     Always respond with valid JSON in exactly this format:
@@ -186,7 +186,7 @@ async def generate_course_with_llm(topic: str) -> Dict[str, Any]:
                         Video(
                             title=f"Video: {query}",
                             url=f"https://www.youtube.com/results?search_query={query.replace(' ', '+')}",
-                            thumbnail="https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg"
+                            thumbnail="https://picsum.photos/1280/720"
                         ) for query in lesson_data.get('video_queries', [])
                     ],
                     code_examples=lesson_data.get('code_examples')
