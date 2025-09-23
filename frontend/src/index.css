@@ -1,3 +1,4 @@
+/* frontend/src/index.css */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -16,58 +17,57 @@ code {
         monospace;
 }
 
-/* Inspired by the provided reference image and specifications */
 @layer base {
-  :root {
-        --background: 260 10% 5%; /* Deep dark purple/black */
-        --foreground: 270 10% 98%; /* Light grey/white for text */
-        --card: 260 10% 8%; /* Slightly lighter dark purple for cards */
-        --card-foreground: 270 10% 98%;
-        --popover: 260 10% 5%;
-        --popover-foreground: 270 10% 98%;
-        --primary: 262 80% 58%; /* Rich violet */
-        --primary-foreground: 0 0% 98%; /* White text on primary */
-        --secondary: 270 50% 25%; /* Muted purple */
-        --secondary-foreground: 0 0% 98%;
-        --muted: 270 50% 25%;
-        --muted-foreground: 270 10% 65%; /* Muted light purple/grey */
-        --accent: 280 90% 65%; /* Bright neon purple/fuchsia */
+    :root {
+        --background: 218 20% 7%;
+        --foreground: 220 14.3% 95.9%;
+        --card: 220 12% 10%;
+        --card-foreground: 220 14.3% 95.9%;
+        --popover: 218 20% 7%;
+        --popover-foreground: 220 14.3% 95.9%;
+        --primary: 217 91% 60%;
+        --primary-foreground: 0 0% 98%;
+        --secondary: 220 12% 10%;
+        --secondary-foreground: 220 14.3% 95.9%;
+        --muted: 220 12% 10%;
+        --muted-foreground: 220 6% 65%;
+        --accent: 217 91% 60%;
         --accent-foreground: 0 0% 98%;
         --destructive: 0 62.8% 30.6%;
         --destructive-foreground: 0 0% 98%;
-        --border: 270 50% 20%; /* Subtle purple border */
-        --input: 270 50% 20%;
-        --ring: 300 90% 60%; /* Bright fuchsia for focus rings */
+        --border: 220 14% 18%;
+        --input: 218 20% 7%;
+        --ring: 217 91% 60%;
         --radius: 0.5rem;
     }
-  .dark {
-        --background: 260 10% 5%;
-        --foreground: 270 10% 98%;
-        --card: 260 10% 8%;
-        --card-foreground: 270 10% 98%;
-        --popover: 260 10% 5%;
-        --popover-foreground: 270 10% 98%;
-        --primary: 262 80% 58%;
+    .dark {
+        --background: 218 20% 7%;
+        --foreground: 220 14.3% 95.9%;
+        --card: 220 12% 10%;
+        --card-foreground: 220 14.3% 95.9%;
+        --popover: 218 20% 7%;
+        --popover-foreground: 220 14.3% 95.9%;
+        --primary: 217 91% 60%;
         --primary-foreground: 0 0% 98%;
-        --secondary: 270 50% 25%;
-        --secondary-foreground: 0 0% 98%;
-        --muted: 270 50% 25%;
-        --muted-foreground: 270 10% 65%;
-        --accent: 280 90% 65%;
+        --secondary: 220 12% 10%;
+        --secondary-foreground: 220 14.3% 95.9%;
+        --muted: 220 12% 10%;
+        --muted-foreground: 220 6% 65%;
+        --accent: 217 91% 60%;
         --accent-foreground: 0 0% 98%;
         --destructive: 0 62.8% 30.6%;
         --destructive-foreground: 0 0% 98%;
-        --border: 270 50% 20%;
-        --input: 270 50% 20%;
-        --ring: 300 90% 60%;
+        --border: 220 14% 18%;
+        --input: 218 20% 7%;
+        --ring: 217 91% 60%;
     }
 }
 
 @layer base {
-  * {
-    @apply border-border;
+    * {
+        @apply border-border;
     }
-  body {
-    @apply bg-background text-foreground;
+    body {
+        @apply bg-background text-foreground;
     }
 }
