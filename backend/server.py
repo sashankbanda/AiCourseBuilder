@@ -163,7 +163,8 @@ async def generate_course_with_llm(topic: str) -> Dict[str, Any]:
 
     try:
         # Initialize the model
-        model = genai.GenerativeModel('gemini-1.5-flash-latest')
+        # model = genai.GenerativeModel('gemini-1.5-flash-latest')
+        model = genai.GenerativeModel('gemini-2.5-flash')
         
         # Set generation config to ensure JSON output
         generation_config = genai.types.GenerationConfig(response_mime_type="application/json")
